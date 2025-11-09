@@ -44,36 +44,42 @@ def read_students(
         "data": students
     }
 
-#lấy chi tiết học sinh theo id
+
 @app.get("/students/{student_id}", response_model=schemas.Student)
 def read_student(student_id: int, db: Session = Depends(get_db)):
     db_student = crud.get_student_by_id(db, student_id)
     if db_student is None:
-        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} not found")
+        # Nếu không tìm thấy, ném ra lỗi 404
+        raise HTTPException(status_code=404, detail="Student not found")
     return db_student
 
-#Cập nhật học sinh theo id
 @app.put("/students/{student_id}", response_model=schemas.Student)
-def update_student(student_id: int, student: schemas.StudentUpdate, db: Session = Depends(get_db)):
-    updated = crud.update_student(db, student_id, student)
-    #Kiểm tra lỗi trùng email với sinh viên khác: lỗi 400
+def update_student_data(student_id: int, student: schemas.StudentUpdate, db: Session = Depends(get_db)):
+    # 1. Kiểm tra sinh viên có tồn tại không
+    db_student = crud.get_student_by_id(db, student_id)
+    if db_student is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    # 2. Kiểm tra email mới (nếu có) có trùng với người khác không
     if student.email:
-        existing = db.query(models.Student).filter(
-            models.Student.email == student.email,
+        existing_student = db.query(models.Student).filter(
+            models.Student.email == student.email, 
             models.Student.id != student_id
         ).first()
-        if existing:
-            raise HTTPException(status_code=400, detail="Email đã tồn tại!")
-    if updated is None:
-        raise HTTPException(status_code=404, detail=f"Student with ID not found{student_id}")
-    return updated
+        if existing_student:
+            raise HTTPException(status_code=400, detail="Email already exists for another student")
+
+    # 3. Tiến hành cập nhật
+    updated_student = crud.update_student(db, student_id, student)
+    return updated_student
 
 #Xóa chi tiết học sinh theo 
-@app.delete("/students/{student_id}", response_model=schemas.Student)
-def delete_student(student_id: int, db: Session = Depends(get_db)):
-    deleted = crud.delete_student(db, student_id)
-    # Kiểm tra và raise HTTPException 404
-    if deleted is None:
-        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} not found")
+@app.delete("/students/{student_id}", status_code=200)
+def delete_student_data(student_id: int, db: Session = Depends(get_db)):
+    deleted_student = crud.delete_student(db, student_id)
+    if deleted_student is None:
+        # Nếu không tìm thấy, ném ra lỗi 404
+        raise HTTPException(status_code=404, detail="Student not found")
         
-    return deleted
+    return {"message": f"Student with ID {student_id} deleted successfully"}
+

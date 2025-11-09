@@ -22,6 +22,7 @@ try:
     db.add_all([s1, s2, s3])
     db.commit()
 
+
     print("✅ Đã thêm 3 sinh viên vào database!")
 
 finally:

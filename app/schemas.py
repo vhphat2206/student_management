@@ -1,28 +1,29 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional
 from pydantic import BaseModel
+from typing import Optional
+import datetime
 
-class StudentBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100, description="Họ và tên đầy đủ")
-    email: EmailStr = Field(..., description="Địa chỉ email")
-    phone: Optional[str] = Field(None, min_length=1, max_length=20, description="Số điện thoại")
-    major: str = Field(..., min_length=1, max_length=100, description="Ngành học")
-    gpa: float = Field(..., ge=0.0, le=4.0, description="Điểm trung bình")
-
-class StudentCreate(StudentBase):
-    pass
+class StudentCreate(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    major: str
+    gpa: float
 
 class StudentUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100, description="Họ và tên đầy đủ")
-    email: Optional[EmailStr] = Field(None, description="Địa chỉ email")
-    phone: Optional[str] = Field(None, min_length=1, max_length=20, description="Số điện thoại")
-    major: Optional[str] = Field(None, min_length=1, max_length=100, description="Ngành học")
-    gpa: Optional[float] = Field(None, ge=0.0, le=4.0, description="Điểm trung bình")
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    major: Optional[str] = None
+    gpa: Optional[float] = None
 
 class Student(BaseModel):
     id: int
     name: str
-    age: int
+    email: str
+    phone: Optional[str] = None
+    major: str
+    gpa: float
+    created_at: Optional[datetime.datetime] = None
 
     class Config:
         from_attributes = True
