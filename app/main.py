@@ -11,7 +11,8 @@ app = FastAPI(title="Student Management API")
 def home():
     return {"message": "Chào mừng đến Student Management API!"}
 
-
+#post: thêm sinh viên
+#response_model=schemas.Student: kết quả=cấu trúc bảng Student lấy từ file schemas
 @app.post("/students", response_model=schemas.Student, status_code=201)
 def create_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
     return crud.create_student(db, student)
